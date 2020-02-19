@@ -10,15 +10,13 @@ import static org.junit.Assert.assertThat;
 public class JPhotoFrameTest {
 
     @Test(expected = NullPointerException.class)
-    public void testStartSlideShowIfPhotosAndListAreNull() {
+    public void testStartSlideShowIfPhotosAndListAreNull()
+    {
         JPhotoShow show = new JPhotoShow(null, 5000, null);
     }
 
     @Test
     public void testGetSlideShowInterval() throws Exception {
-
-        String frameName = "test1";
-        JPhotoCollection photos = new JPhotoCollection();
 
         JPhotoFrame frame = new JPhotoFrame()
         {
