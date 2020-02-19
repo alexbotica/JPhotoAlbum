@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionListener;
 
 import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifDirectory;
+import org.hamcrest.Matcher;
 
 /** Top-level frame containing a BrowsePanel which shows scaled versions
  * images from the given list of images.
@@ -80,6 +81,8 @@ public class JPhotoFrame extends JFrame
     public static String PAGEINFO = "pageinfo";
     public static String PHOTO_DIR = "photo_directory";
 
+    static final int DEFAULT_SLIDE_SHOW_INTERVAL = 5000;
+
     protected Preferences prefs = null;
     protected String albumFileName = null;
     protected JPhotoList list = null;
@@ -97,6 +100,7 @@ public class JPhotoFrame extends JFrame
     protected JPhotoExifDialog exifDialog = null;
     protected JFrame helpFrame = null;
     protected File photoDirectory = null;
+    protected JPhotoShow show = null;
     
     protected static HashMap allFrames = new HashMap();
     
@@ -110,6 +114,10 @@ public class JPhotoFrame extends JFrame
 
     public JPhotoFrame(String frameName, String files[]) throws Exception {
         init(frameName, new JPhotoCollection(files));
+    }
+
+    public JPhotoFrame(JPhotoCollection photos) throws Exception {
+        this.photos = photos;
     }
 
     /** Real init called from different constructors
@@ -546,7 +554,7 @@ public class JPhotoFrame extends JFrame
         else if (cmd.equals(JPhotoMenu.A_WATERMARK)) {
             String def = photos.getWatermark();
             if (def.equals(""))
-                def = "© "+Calendar.getInstance().get(Calendar.YEAR)+" ";
+                def = "ï¿½ "+Calendar.getInstance().get(Calendar.YEAR)+" ";
             String res = JOptionPane.showInputDialog(this, "Watermark",
                                                      def);
             if (res!=null)
@@ -580,14 +588,10 @@ public class JPhotoFrame extends JFrame
             showExif();
         }
         else if (cmd.equals(JPhotoMenu.A_SLIDESHOW)) {
-            if (photos.getSize()>0) {
-                JPhotoShow show = new JPhotoShow(photos, 5000, list);
-                show.setVisible(true);
-            }
-            else
-                JOptionPane.showMessageDialog(this, "No photos to show!",
-                                              APP_NAME, JOptionPane.ERROR_MESSAGE);
-                
+            handleStartSlideshow(DEFAULT_SLIDE_SHOW_INTERVAL);
+        }
+        else if (cmd.equals(JPhotoMenu.A_SLIDESHOW_2XF)) {
+            handleStartSlideshow(DEFAULT_SLIDE_SHOW_INTERVAL / 2);
         }
         else if (cmd.equals(JPhotoMenu.A_HELP)) {
             displayHelp();
@@ -596,7 +600,7 @@ public class JPhotoFrame extends JFrame
             JOptionPane.showMessageDialog(this, APP_NAME+" v1.4.5 - Organize and Publish Your Digital Photos.\n"+
                                           "Copyright 2005-2007 Jari Karjala [www.jpkware.com],\n"
                                           +"Tarja Hakala [www.hakalat.net]"
-                                          +" and Zbynek Mužík [zbynek.muzik@email.cz]\n"
+                                          +" and Zbynek Muï¿½ï¿½k [zbynek.muzik@email.cz]\n"
                                           +"This is free software, licenced under the GNU General Public License.",
                                           JPhotoMenu.A_ABOUT, JOptionPane.INFORMATION_MESSAGE);
         }
@@ -624,6 +628,22 @@ public class JPhotoFrame extends JFrame
             System.out.println("Not implemented: "+cmd);
         
         setTitle();
+    }
+
+    private void handleStartSlideshow(int interval) {
+        //if (photos.getSize()>0) {
+            try {
+                show = new JPhotoShow(photos, interval, list);
+                show.setVisible(true);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Memory low!",
+                        APP_NAME, JOptionPane.ERROR_MESSAGE);
+            }
+        //}
+        //else
+        //    JOptionPane.showMessageDialog(this, "No photos to show!",
+        //                                  APP_NAME, JOptionPane.ERROR_MESSAGE);
     }
 
     public void insertPhotos(String files[]) {
@@ -813,7 +833,11 @@ public class JPhotoFrame extends JFrame
             photos.setDirty(true);
         }
     }
-    
+
+    public int getSlideShowInterval() {
+        return show.timer.getInitialDelay();
+    }
+
     /** Tell the list how big a view there is so that it can adjust display rows.
     */
     class ResizeAdapter extends ComponentAdapter {
