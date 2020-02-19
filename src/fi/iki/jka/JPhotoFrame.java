@@ -100,7 +100,6 @@ public class JPhotoFrame extends JFrame
     protected JPhotoExifDialog exifDialog = null;
     protected JFrame helpFrame = null;
     protected File photoDirectory = null;
-    protected JPhotoShow show = null;
     
     protected static HashMap allFrames = new HashMap();
     
@@ -630,20 +629,20 @@ public class JPhotoFrame extends JFrame
         setTitle();
     }
 
-    private void handleStartSlideshow(int interval) {
-        //if (photos.getSize()>0) {
+    void handleStartSlideshow(int interval) {
+        if (photos.getSize()>0) {
             try {
-                show = new JPhotoShow(photos, interval, list);
+                JPhotoShow show = new JPhotoShow(photos, interval, list);
                 show.setVisible(true);
             } catch (NullPointerException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Memory low!",
                         APP_NAME, JOptionPane.ERROR_MESSAGE);
             }
-        //}
-        //else
-        //    JOptionPane.showMessageDialog(this, "No photos to show!",
-        //                                  APP_NAME, JOptionPane.ERROR_MESSAGE);
+        }
+        else
+            JOptionPane.showMessageDialog(this, "No photos to show!",
+                                          APP_NAME, JOptionPane.ERROR_MESSAGE);
     }
 
     public void insertPhotos(String files[]) {
@@ -832,10 +831,6 @@ public class JPhotoFrame extends JFrame
             editingPhoto.setText(textInput.getText());
             photos.setDirty(true);
         }
-    }
-
-    public int getSlideShowInterval() {
-        return show.timer.getInitialDelay();
     }
 
     /** Tell the list how big a view there is so that it can adjust display rows.
